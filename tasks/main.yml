@@ -22,14 +22,14 @@
 
   # Get CPYUtils
   - name: Clone CPYUtils git repo
-  - git:
+    git:
       repo: 'https://github.com/grycap/cpyutils.git'
       dest: "/tmp/cpyutils-{{ cpyutils_git_branch }}"
       version: "{{ cpyutils_git_branch }}"
 
   # Get CLUES2 repo
   - name: Clone CLUES2 git repo
-  - git:
+    git:
       repo: 'https://github.com/grycap/clues.git'
       dest: "/tmp/clues-{{ clues_git_branch }}"
       version: "{{ clues_git_branch }}"
