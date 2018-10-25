@@ -35,7 +35,7 @@ This an example of how to install a SLURM cluster with three nodes:
 ```
 - hosts: server
   roles:
-  - { role: 'grycap.clues', clues_queue_system: 'slurm', ec3_max_instances: '3' }
+  - { role: 'grycap.clues', clues_queue_system: 'slurm', max_number_of_nodes: '3' }
 ```
 Contributing to the role
 ========================
