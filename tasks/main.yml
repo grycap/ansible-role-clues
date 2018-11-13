@@ -56,16 +56,21 @@
     ini_file: dest=/etc/clues2/clues2.cfg section={{ item.section }} option={{ item.option }} value="{{ item.value }}"
     with_items:
       - { section: 'general', option: 'POWERMANAGER_CLASS', value: '{{clues_powermanager_class}}' }
-      - { section: 'scheduling', option: 'IDLE_TIME', value: '1800' }
-      - { section: 'scheduling', option: 'RECONSIDER_JOB_TIME', value: '120' }
-      - { section: 'monitoring', option: 'MAX_WAIT_POWERON', value: '3000' }
-      - { section: 'monitoring', option: 'MAX_WAIT_POWEROFF', value: '600' }
-      - { section: 'monitoring', option: 'PERIOD_LIFECYCLE', value: '10' }
-      - { section: 'monitoring', option: 'PERIOD_MONITORING_NODES', value: '2' }
+      - { section: 'scheduling', option: 'IDLE_TIME', value: '{{ clues_idle_time }}' }
+      - { section: 'scheduling', option: 'RECONSIDER_JOB_TIME', value: '{{ clues_reconsider_job_time }}' }
+      - { section: 'monitoring', option: 'MAX_WAIT_POWERON', value: '{{ clues_max_wait_poweron }}' }
+      - { section: 'monitoring', option: 'MAX_WAIT_POWEROFF', value: '{{ clues_max_wait_poweroff }}' }
+      - { section: 'monitoring', option: 'PERIOD_LIFECYCLE', value: '{{ clues_period_lifecycle }}' }
+      - { section: 'monitoring', option: 'PERIOD_MONITORING_NODES', value: '{{ clues_period_monitoring_nodes }}' }
       - { section: 'general', option: 'CLUES_SECRET_TOKEN', value: '{{clues_secret_token}}' }
       - { section: 'client', option: 'CLUES_SECRET_TOKEN', value: '{{clues_secret_token}}' }
       - { section: 'client', option: 'CLUES_REQUEST_WAIT_TIMEOUT', value: '3000' }
       - { section: 'scheduling', option: 'MAX_BOOTING_NODES', value: '{{ max_number_of_nodes }}' }
+      - { section: 'scheduling', option: 'SCHEDULER_CLASSES', value: '{{ clues_schedulers_classes }}' }
+      - { section: 'scheduling', option: 'COOLDOWN_NODES', value: '{{ clues_cooldown_nodes }}' }
+      - { section: 'scheduling', option: 'EXTRA_SLOTS_FREE', value: '{{ clues_extra_slots_free }}' }
+      - { section: 'scheduling', option: 'EXTRA_NODES_FREE', value: '{{ clues_extra_nodes_free }}' }
+      - { section: 'scheduling', option: 'EXTRA_NODES_PERIOD', value: '{{ clues_extra_nodes_period }}' }
 
     notify: restart cluesd
 
