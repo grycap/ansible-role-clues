@@ -13,3 +13,24 @@ clues_powermanager_class: cluesplugins.im
 # Set GitHub branch to install
 cpyutils_git_branch: master
 clues_git_branch: master
+
+# Monitoring
+clues_max_wait_poweron: 3000
+clues_max_wait_poweroff: 600
+clues_period_lifecycle: 10
+clues_period_monitoring_nodes: 2
+# Schedulers
+clues_schedulers_classes: "clueslib.schedulers.CLUES_Scheduler_PowOn_Requests, clueslib.schedulers.CLUES_Scheduler_Reconsider_Jobs, clueslib.schedulers.CLUES_Scheduler_PowOff_IDLE" # Default CLUES schedulers
+
+# Settings for the clueslib.schedulers.CLUES_Scheduler_PowOff_IDLE
+clues_idle_time: 1800
+clues_cooldown_nodes: 0
+
+# Settings for the clueslib.schedulers.CLUES_Scheduler_Reconsider_Jobs
+clues_reconsider_job_time: 60
+
+# Settings for the clueslib.schedulers.CLUES_Scheduler_PowOn_Free
+clues_extra_nodes_free: 0
+clues_extra_slots_free: 0
+clues_extra_nodes_period: 30
+
