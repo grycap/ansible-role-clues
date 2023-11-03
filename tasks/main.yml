@@ -100,11 +100,21 @@
 - name: Create EC3 directory
   file: path=/usr/local/ec3 state=directory mode=755
 
-- name: Create auth file
+- name: Create auth file from auth
   copy:
     dest: /usr/local/ec3/auth.dat
     content: "{{auth}}"
     force: no
+  when: auth is defined and auth != ""
+
+- name: Create auth file from auth token
+  get_urL:
+    url: "{{ clues_auth_token | from_json | json_query('url') }}"
+    dest: /usr/local/ec3/auth.dat
+    force: no
+    headers:
+      Authorization: "Bearer {{ clues_auth_token | from_json | json_query('token') }}"
+  when: clues_auth_token is defined and clues_auth_token != ""
 
 - name: Copy 'extract_proxy' file
   copy: dest=/tmp/extract_proxy.py src=extract_proxy.py mode=0755 force=no

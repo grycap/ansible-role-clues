@@ -6,8 +6,8 @@ clues_queue_system: slurm
 max_number_of_nodes: 5
 # Prefix applied to the elastic cluster worker nodes
 vnode_prefix: wn
-# Path for the authorization file used
-auth: auth.dat
+# Authorization file for the IM plugin
+auth: ""
 # Class to use as power manager (POWERMANAGER_CLASS)
 clues_powermanager_class: cluesplugins.im
 # Set GitHub branch to install
