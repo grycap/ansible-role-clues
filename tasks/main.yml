@@ -108,7 +108,7 @@
   when: auth is defined and auth != ""
 
 - name: Create auth file from auth token
-  get_urL:
+  get_url:
     url: "{{ clues_auth_token | from_json | json_query('url') }}"
     dest: /usr/local/ec3/auth.dat
     force: no
