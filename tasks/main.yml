@@ -20,7 +20,7 @@
 
 - block:
   - name: Include "{{ansible_os_family}}" CLUES2 requirements
-    include: "{{ansible_os_family}}.yml"
+    include_tasks: "{{ansible_os_family}}.yml"
 
   - set_fact: pip_exec=pip2
     when: python_version.stdout|int < 3
@@ -140,7 +140,7 @@
 
 # CLUES LRMS configuration
 - name: Configuring the elastic cluster to use "{{clues_queue_system}}" LRMS
-  include: "{{clues_queue_system}}.yml"
+  include_tasks: "{{clues_queue_system}}.yml"
 
 - name: Start CLUES service
   service: name=cluesd state=started enabled=yes
