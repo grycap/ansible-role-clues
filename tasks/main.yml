@@ -13,20 +13,24 @@
   shell: ls /usr/bin/python || { ls /usr/bin/python3 && ln -s /usr/bin/python3 /usr/bin/python; } || { ls /usr/bin/python2 && ln -s /usr/bin/python2 /usr/bin/python; }
   changed_when: false
 
-- name: Check Python version
-  command: python -c 'import sys; print(sys.version_info[0])'
-  register: python_version
-  changed_when: false
-
 - block:
   - name: Include "{{ansible_os_family}}" CLUES2 requirements
     include: "{{ansible_os_family}}.yml"
 
   - set_fact: pip_exec=pip2
-    when: python_version.stdout|int < 3
+    when: ansible_python_version is version('3', '<')
 
   - set_fact: pip_exec=pip3
-    when: python_version.stdout|int >= 3
+    when: ansible_python_version is version('3', '>=')
+
+  - name: Set extra_args var
+    set_fact:
+      extra_args: ""
+
+  - name: Set extra_args var in py3.11
+    set_fact:
+      extra_args: --break-system-packages
+    when: ansible_python_version is version('3.11', '>=')
 
   - name: Install CLUES2 deps
     pip:
@@ -41,8 +45,8 @@
         - distro
         - git+https://github.com/grycap/cpyutils.git@{{ cpyutils_git_branch }}
       executable: "{{pip_exec}}"
-    when: python_version.stdout|int < 3
-  
+    when: ansible_python_version is version('3', '<')
+
   - name: Install CLUES2 deps
     pip:
       name: 
@@ -54,8 +58,9 @@
         - distro
         - git+https://github.com/grycap/cpyutils.git@{{ cpyutils_git_branch }}
       executable: "{{pip_exec}}"
-    when: python_version.stdout|int >= 3
-  
+      extra_args: "{{ extra_args }}"
+    when: ansible_python_version is version('3', '>=')
+
   - name: Install CLUES2 conf files
     pip:
       name: git+https://github.com/grycap/clues.git@{{ clues_git_branch }}
