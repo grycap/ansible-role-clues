@@ -16,6 +16,9 @@
 - name: Create clues2 conf dir
   file: path=/etc/clues2 state=directory mode=755
 
+- name: Create clues2 conf.d dir
+  file: path=/etc/clues2/conf.d state=directory mode=755
+
 - block:
   - name: Include "{{ansible_os_family}}" CLUES2 requirements
     include_tasks: "{{ansible_os_family}}.yml"
