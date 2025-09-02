@@ -8,7 +8,11 @@
   notify: restart cluesd
 
 - name: Create Kubernetes plugin configuration file for CLUES2
-  copy: src=/etc/clues2/conf.d/plugin-kubernetes.cfg-example dest=/etc/clues2/conf.d/plugin-kubernetes.cfg force=no remote_src=yes
+  get_url:
+    url: https://raw.githubusercontent.com/grycap/clues/refs/heads/master/etc/conf.d/plugin-kubernetes.cfg-example
+    dest: /etc/clues2/conf.d/plugin-kubernetes.cfg
+    force: no
+    mode: '0644'
   notify: restart cluesd
 
 - name: Set Insecure KUBERNETES_SERVER value

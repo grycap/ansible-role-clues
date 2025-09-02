@@ -13,6 +13,9 @@
   shell: ls /usr/bin/python || { ls /usr/bin/python3 && ln -s /usr/bin/python3 /usr/bin/python; } || { ls /usr/bin/python2 && ln -s /usr/bin/python2 /usr/bin/python; }
   changed_when: false
 
+- name: Create clues2 conf dir
+  file: path=/etc/clues2 state=directory mode=755
+
 - block:
   - name: Include "{{ansible_os_family}}" CLUES2 requirements
     include_tasks: "{{ansible_os_family}}.yml"
@@ -81,7 +84,11 @@
     file: path=/etc/clues2 state=directory mode=755
 
   - name: Create CLUES2 config file
-    copy: src=/etc/clues2/clues2.cfg-full-example dest=/etc/clues2/clues2.cfg force=no remote_src=yes
+    get_url:
+      url: https://raw.githubusercontent.com/grycap/clues/refs/heads/master/etc/clues2.cfg-full-example
+      dest: /etc/clues2/clues2.cfg
+      force: no
+      mode: '0644'
     notify: restart cluesd
 
   when: not clues_installed.stat.exists

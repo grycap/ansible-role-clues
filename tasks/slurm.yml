@@ -37,7 +37,11 @@
   notify: restart cluesd
 
 - name: Create SLURM plugin configuration file for CLUES2
-  copy: src=/etc/clues2/conf.d/plugin-slurm.cfg-example dest=/etc/clues2/conf.d/plugin-slurm.cfg force=no remote_src=yes
+  get_url:
+    url: https://raw.githubusercontent.com/grycap/clues/refs/heads/master/etc/conf.d/plugin-slurm.cfg-example
+    dest: /etc/clues2/conf.d/plugin-slurm.cfg
+    force: no
+    mode: '0644'
   notify: restart cluesd
 
 - name: Set SLURM_SERVER value
