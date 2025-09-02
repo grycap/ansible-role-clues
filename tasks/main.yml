@@ -15,7 +15,7 @@
 
 - block:
   - name: Include "{{ansible_os_family}}" CLUES2 requirements
-    include: "{{ansible_os_family}}.yml"
+    include_tasks: "{{ansible_os_family}}.yml"
 
   - set_fact: pip_exec=pip2
     when: ansible_python_version is version('3', '<')
@@ -113,7 +113,7 @@
   when: auth is defined and auth != ""
 
 - name: Create auth file from auth token
-  get_urL:
+  get_url:
     url: "{{ clues_auth_token | from_json | json_query('url') }}"
     dest: /usr/local/ec3/auth.dat
     force: no
@@ -145,7 +145,7 @@
 
 # CLUES LRMS configuration
 - name: Configuring the elastic cluster to use "{{clues_queue_system}}" LRMS
-  include: "{{clues_queue_system}}.yml"
+  include_tasks: "{{clues_queue_system}}.yml"
 
 - name: Start CLUES service
   service: name=cluesd state=started enabled=yes
