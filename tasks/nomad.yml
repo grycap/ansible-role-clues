@@ -8,6 +8,11 @@
 - ini_file: dest=/etc/clues2/clues2.cfg section=general option=LRMS_CLASS value=cluesplugins.nomad
   notify: restart cluesd
 
+- name: Check if file exists
+  stat:
+    path: /etc/clues2/conf.d/plugin-nomad.cfg
+  register: nomad_cfg_file
+
 - name: Create Nomad plugin configuration file for CLUES2
   get_url:
     url: https://raw.githubusercontent.com/grycap/clues/refs/heads/master/etc/conf.d/plugin-nomad.cfg-example
@@ -15,6 +20,7 @@
     force: no
     mode: '0644'
   notify: restart cluesd
+  when: not nomad_cfg_file.stat.exists
 
 - name: Set NOMAD_NODES_LIST_CLUES value
   ini_file: dest=/etc/clues2/conf.d/plugin-nomad.cfg section=NOMAD option=NOMAD_NODES_LIST_CLUES value={{NOMAD_NODES_LIST_CLUES}}

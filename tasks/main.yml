@@ -19,9 +19,10 @@
 - name: Create clues2 conf.d dir
   file: path=/etc/clues2/conf.d state=directory mode=755
 
+- name: Include "{{ansible_os_family}}" CLUES2 requirements
+  include_tasks: "{{ansible_os_family}}.yml"
+
 - block:
-  - name: Include "{{ansible_os_family}}" CLUES2 requirements
-    include_tasks: "{{ansible_os_family}}.yml"
 
   - set_fact: pip_exec=pip2
     when: ansible_python_version is version('3', '<')
@@ -138,6 +139,11 @@
   command: /tmp/extract_proxy.py creates=/usr/local/ec3/proxy.pem
   ignore_errors: yes
 
+- name: Check if file exists
+  stat:
+    path: /etc/clues2/conf.d/plugin-im.cfg
+  register: cfg_file
+
 - name: Create IM plugin configuration file for CLUES2
   get_url:
     url: https://raw.githubusercontent.com/grycap/clues/refs/heads/master/etc/conf.d/plugin-im.cfg-example
@@ -145,6 +151,7 @@
     force: no
     mode: '0644'
   notify: restart cluesd
+  when: not cfg_file.stat.exists
 
 - name: Set IM plugin configuration file values
   ini_file: dest=/etc/clues2/conf.d/plugin-im.cfg section="IM VIRTUAL CLUSTER" option={{ item.option }} value="{{ item.value }}"
