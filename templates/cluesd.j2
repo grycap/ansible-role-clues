@@ -1,0 +1,13 @@
+[Unit]
+Description=CLUES
+After=network.target remote-fs.target nss-lookup.target network.service
+
+[Service]
+Type=simple
+ExecStart={{ CLUES_SERVER_BINARY }}
+KillMode=process
+PIDFile=/var/run/cluesd.pid
+Restart=on-abort
+
+[Install]
+WantedBy=multi-user.target
