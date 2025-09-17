@@ -1,44 +1,63 @@
+- name: Find sbatch binary
+  find:
+    paths:
+      - /usr/bin
+      - /usr/local/bin
+    patterns: "sbatch"
+    file_type: file
+  register: sbatch_file
+
 - name: Set SBATCH_BINARY fact
   set_fact:
-    SBATCH_BINARY: "{{item}}"
-  with_first_found:
-    - files:
-      - "/usr/bin/sbatch"
-      - "/usr/local/bin/sbatch"
+    SBATCH_BINARY: "{{ sbatch_file.files[0].path }}"
+
+- name: Find scontrol binary
+  find:
+    paths:
+      - /usr/bin
+      - /usr/local/bin
+    patterns: "scontrol"
+    file_type: file
+  register: scontrol_file
 
 - name: Set SCONTROL_BIN fact
   set_fact:
-    SCONTROL_BIN: "{{item}}"
-  with_first_found:
-    - files:
-      - "/usr/bin/scontrol"
-      - "/usr/local/bin/scontrol"
+    SCONTROL_BIN: "{{ scontrol_file.files[0].path }}"
 
 - name: Set SBATCH_BACKUP fact
   set_fact:
     SBATCH_BACKUP: "{{SBATCH_BINARY}}.o"
 
+- name: Find clues-slurm-wrapper binary
+  find:
+    paths:
+      - /usr/bin
+      - /usr/local/bin
+    patterns: "clues-slurm-wrapper"
+    file_type: file
+  register: wrapper_file
+
 - name: Set CLUES_SLURM_WRAPPER fact
   set_fact:
-    CLUES_SLURM_WRAPPER: "{{item}}"
-  with_first_found:
-    - files:
-      - "/usr/bin/clues-slurm-wrapper"
-      - "/usr/local/bin/clues-slurm-wrapper"
-
-- name: Start SLURM service
-  command: slurmctld
-
-- name: Reconfigure SLURM
-  command: scontrol reconfig
+    CLUES_SLURM_WRAPPER: "{{ wrapper_file.files[0].path }}"
 
 - name: Set SLURM as CLUES2 LRMS
   ini_file: dest=/etc/clues2/clues2.cfg section=general option=LRMS_CLASS value=cluesplugins.slurm
   notify: restart cluesd
 
+- name: Check if file exists
+  stat:
+    path: /etc/clues2/conf.d/plugin-slurm.cfg
+  register: slurm_cfg_file
+
 - name: Create SLURM plugin configuration file for CLUES2
-  copy: src=/etc/clues2/conf.d/plugin-slurm.cfg-example dest=/etc/clues2/conf.d/plugin-slurm.cfg force=no remote_src=yes
+  get_url:
+    url: https://raw.githubusercontent.com/grycap/clues/refs/heads/master/etc/conf.d/plugin-slurm.cfg-example
+    dest: /etc/clues2/conf.d/plugin-slurm.cfg
+    force: no
+    mode: '0644'
   notify: restart cluesd
+  when: not slurm_cfg_file.stat.exists
 
 - name: Set SLURM_SERVER value
   ini_file: dest=/etc/clues2/conf.d/plugin-slurm.cfg section=SLURM option=SLURM_SERVER value=slurmserver
@@ -53,7 +72,7 @@
     - { option: 'SLURM_JOBS_COMMAND', value: '{{SCONTROL_BIN}} -o show jobs' }
 
 - name: Create sbatch script backup
-  copy: src={{SBATCH_BINARY}} dest={{SBATCH_BACKUP}} mode=755 force=no
+  copy: src={{SBATCH_BINARY}} dest={{SBATCH_BACKUP}} mode=755 force=no remote_src=yes
 
 - name: Replace sbatch script with clues-slurm wrapper
-  copy: src={{CLUES_SLURM_WRAPPER}} dest={{SBATCH_BINARY}}
+  copy: src={{CLUES_SLURM_WRAPPER}} dest={{SBATCH_BINARY}} remote_src=yes

@@ -1,32 +1,43 @@
 ---
 # Add a fast check to speed reconfiguration
-- set_fact: CLUES_PATH=/usr/local/bin/clues
+- set_fact:
+    CLUES_PATH: /usr/local/bin/clues
+    CLUES_SERVER_BINARY: /usr/local/bin/cluesserver
   when: ansible_os_family == "Debian" or (ansible_os_family == "RedHat" and ansible_distribution_major_version|int > 7)
 
-- set_fact: CLUES_PATH=/usr/bin/clues
+- set_fact:
+    CLUES_PATH: /usr/bin/clues
+    CLUES_SERVER_BINARY: /usr/bin/cluesserver
   when: ansible_os_family == "RedHat" and ansible_distribution_major_version|int <= 7
 
 - stat: path={{CLUES_PATH}}
   register: clues_installed
 
-- name: Link python 3 or 2 in case is needed
-  shell: ls /usr/bin/python || { ls /usr/bin/python3 && ln -s /usr/bin/python3 /usr/bin/python; } || { ls /usr/bin/python2 && ln -s /usr/bin/python2 /usr/bin/python; }
-  changed_when: false
+- name: Create clues2 conf dir
+  file: path=/etc/clues2 state=directory mode=755
 
-- name: Check Python version
-  command: python -c 'import sys; print(sys.version_info[0])'
-  register: python_version
-  changed_when: false
+- name: Create clues2 conf.d dir
+  file: path=/etc/clues2/conf.d state=directory mode=755
 
 - block:
+
   - name: Include "{{ansible_os_family}}" CLUES2 requirements
     include_tasks: "{{ansible_os_family}}.yml"
 
   - set_fact: pip_exec=pip2
-    when: python_version.stdout|int < 3
+    when: ansible_python_version is version('3', '<')
 
   - set_fact: pip_exec=pip3
-    when: python_version.stdout|int >= 3
+    when: ansible_python_version is version('3', '>=')
+
+  - name: Set extra_args var
+    set_fact:
+      extra_args: ""
+
+  - name: Set extra_args var in py3.11
+    set_fact:
+      extra_args: --break-system-packages
+    when: ansible_python_version is version('3.11', '>=')
 
   - name: Install CLUES2 deps
     pip:
@@ -41,8 +52,8 @@
         - distro
         - git+https://github.com/grycap/cpyutils.git@{{ cpyutils_git_branch }}
       executable: "{{pip_exec}}"
-    when: python_version.stdout|int < 3
-  
+    when: ansible_python_version is version('3', '<')
+
   - name: Install CLUES2 deps
     pip:
       name: 
@@ -54,8 +65,9 @@
         - distro
         - git+https://github.com/grycap/cpyutils.git@{{ cpyutils_git_branch }}
       executable: "{{pip_exec}}"
-    when: python_version.stdout|int >= 3
-  
+      extra_args: "{{ extra_args }}"
+    when: ansible_python_version is version('3', '>=')
+
   - name: Install CLUES2 conf files
     pip:
       name: git+https://github.com/grycap/clues.git@{{ clues_git_branch }}
@@ -67,16 +79,16 @@
       name: git+https://github.com/grycap/clues.git@{{ clues_git_branch }}
       executable: "{{pip_exec}}"
 
-  - name: Stop clues server
-    command: systemctl stop cluesd
-    ignore_errors: yes
-
   # CLUES2 Config file
   - name: Set CLUES2 folder rights
     file: path=/etc/clues2 state=directory mode=755
 
   - name: Create CLUES2 config file
-    copy: src=/etc/clues2/clues2.cfg-full-example dest=/etc/clues2/clues2.cfg force=no remote_src=yes
+    get_url:
+      url: https://raw.githubusercontent.com/grycap/clues/refs/heads/master/etc/clues2.cfg-full-example
+      dest: /etc/clues2/clues2.cfg
+      force: no
+      mode: '0644'
     notify: restart cluesd
 
   when: not clues_installed.stat.exists
@@ -123,9 +135,19 @@
   command: /tmp/extract_proxy.py creates=/usr/local/ec3/proxy.pem
   ignore_errors: yes
 
+- name: Check if file exists
+  stat:
+    path: /etc/clues2/conf.d/plugin-im.cfg
+  register: cfg_file
+
 - name: Create IM plugin configuration file for CLUES2
-  copy: src=/etc/clues2/conf.d/plugin-im.cfg-example dest=/etc/clues2/conf.d/plugin-im.cfg force=no remote_src=yes
+  get_url:
+    url: https://raw.githubusercontent.com/grycap/clues/refs/heads/master/etc/conf.d/plugin-im.cfg-example
+    dest: /etc/clues2/conf.d/plugin-im.cfg
+    force: no
+    mode: '0644'
   notify: restart cluesd
+  when: not cfg_file.stat.exists
 
 - name: Set IM plugin configuration file values
   ini_file: dest=/etc/clues2/conf.d/plugin-im.cfg section="IM VIRTUAL CLUSTER" option={{ item.option }} value="{{ item.value }}"
@@ -142,8 +164,17 @@
 - name: Configuring the elastic cluster to use "{{clues_queue_system}}" LRMS
   include_tasks: "{{clues_queue_system}}.yml"
 
+- name: Create CLUES service
+  template: 
+    src: cluesd.j2
+    dest: /usr/lib/systemd/system/cluesd.service
+
 - name: Start CLUES service
-  service: name=cluesd state=started enabled=yes
+  systemd_service:
+    daemon_reload: yes
+    name: cluesd
+    state: started
+    enabled: yes
 
 # This fixes a problem with the CLUES service in Centos 7
 #- name: Kill and restart clues service (Centos 7 only)

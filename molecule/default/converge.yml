@@ -3,11 +3,34 @@
   hosts: all
   tasks:
  
+    - name: Link python 3 or 2 in case is needed
+      shell: ls /usr/bin/python || { ls /usr/bin/python3 && ln -s /usr/bin/python3 /usr/bin/python; } || { ls /usr/bin/python2 && ln -s /usr/bin/python2 /usr/bin/python; }
+      changed_when: false
+
+    - set_fact:
+        clues_queue_system: "{{ lookup('env','QUEUE_SYSTEM', default='slurm') }}"
+
+    - block:
+
+      - apt:
+          name:
+            - slurm-wlm
+            - slurm-client
+          state: present
+          update_cache: yes
+        when: ansible_os_family == "Debian"
+
+      - yum:
+          name: slurm
+          state: present
+        when: ansible_os_family == "RedHat"
+
+      when: clues_queue_system == "slurm"
+
     - name: "Include grycap.clues"
       include_role:
         name: "ansible-role-clues"
       vars:
-        clues_queue_system: kubernetes
         auth: "id = test; proxy = ----proxy----"
 
     - name: test

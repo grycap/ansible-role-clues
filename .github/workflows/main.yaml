@@ -11,29 +11,27 @@ on:
 
 jobs:
 
-  molecule:
-    name: Molecule
+  molecule_k8s:
+    name: CLUES K8s tests
     runs-on: ubuntu-latest
     strategy:
       matrix:
         distro:
-          - centos7
-          - centos8
-          - ubuntu2004
-          - ubuntu1804
-          - ubuntu1604
+          - rockylinux9
+          - ubuntu2204
+          - ubuntu2404
 
     steps:
       - name: Check out the codebase.
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Set up Python 3.
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: '3.x'
 
       - name: Install test dependencies.
-        run: pip3 install ansible molecule[docker] docker
+        run: pip3 install requests==2.31.0 ansible==8.7.0 molecule-plugins[docker] docker
 
       - name: Run Molecule tests.
         run: molecule test
@@ -41,3 +39,36 @@ jobs:
           PY_COLORS: '1'
           ANSIBLE_FORCE_COLOR: '1'
           MOLECULE_DISTRO: ${{ matrix.distro }}
+          ANSIBLE_REMOTE_TMP: '/tmp/.ansible/tmp'
+          QUEUE_SYSTEM: 'kubernetes'
+
+  molecule_slurm:
+    name: CLUES SLURM tests
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        distro:
+          - rockylinux9
+          - ubuntu2204
+          - ubuntu2404
+
+    steps:
+      - name: Check out the codebase.
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      - name: Install test dependencies.
+        run: pip3 install requests==2.31.0 ansible==8.7.0 molecule-plugins[docker] docker
+
+      - name: Run Molecule tests.
+        run: molecule test
+        env:
+          PY_COLORS: '1'
+          ANSIBLE_FORCE_COLOR: '1'
+          MOLECULE_DISTRO: ${{ matrix.distro }}
+          ANSIBLE_REMOTE_TMP: '/tmp/.ansible/tmp'
+          QUEUE_SYSTEM: 'slurm'

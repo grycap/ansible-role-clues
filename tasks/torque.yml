@@ -21,9 +21,19 @@
   ini_file: dest=/etc/clues2/clues2.cfg section=general option=LRMS_CLASS value=cluesplugins.pbs
   notify: restart cluesd
 
-- name: Set initial CLUES pbs plugin configuration
-  copy: src=/etc/clues2/conf.d/plugin-pbs.cfg-example dest=/etc/clues2/conf.d/plugin-pbs.cfg force=no remote_src=yes
+- name: Check if file exists
+  stat:
+    path: /etc/clues2/conf.d/plugin-pbs.cfg
+  register: pbs_cfg_file
+
+- name: Create PBS plugin configuration file for CLUES2
+  get_url:
+    url: https://raw.githubusercontent.com/grycap/clues/refs/heads/master/etc/conf.d/plugin-pbs.cfg-example
+    dest: /etc/clues2/conf.d/plugin-pbs.cfg
+    force: no
+    mode: '0644'
   notify: restart cluesd
+  when: not pbs_cfg_file.stat.exists
 
 - name: Configure CLUES torque plugin
   ini_file: dest=/etc/clues2/conf.d/plugin-pbs.cfg section=PBS option=PBS_SERVER value=torqueserver

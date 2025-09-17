@@ -7,9 +7,19 @@
   ini_file: dest=/etc/clues2/clues2.cfg section=general option=LRMS_CLASS value=cluesplugins.kubernetes
   notify: restart cluesd
 
+- name: Check if file exists
+  stat:
+    path: /etc/clues2/conf.d/plugin-kubernetes.cfg
+  register: k8s_cfg_file
+
 - name: Create Kubernetes plugin configuration file for CLUES2
-  copy: src=/etc/clues2/conf.d/plugin-kubernetes.cfg-example dest=/etc/clues2/conf.d/plugin-kubernetes.cfg force=no remote_src=yes
+  get_url:
+    url: https://raw.githubusercontent.com/grycap/clues/refs/heads/master/etc/conf.d/plugin-kubernetes.cfg-example
+    dest: /etc/clues2/conf.d/plugin-kubernetes.cfg
+    force: no
+    mode: '0644'
   notify: restart cluesd
+  when: not k8s_cfg_file.stat.exists
 
 - name: Set Insecure KUBERNETES_SERVER value
   ini_file: dest=/etc/clues2/conf.d/plugin-kubernetes.cfg section=KUBERNETES option=KUBERNETES_SERVER value="http://localhost:8080"
