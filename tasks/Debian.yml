@@ -13,6 +13,3 @@
   - name: Apt install pip2 in Deb
     apt: pkg=python-pip,python-setuptools,python-sqlite
     when: ansible_python_version is version('3', '<')
-
-  - name: Set clues facts
-    set_fact: CLUES_SERVER_BINARY="/usr/local/bin/cluesserver"

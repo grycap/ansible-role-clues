@@ -1,17 +1,17 @@
 ---
 # Add a fast check to speed reconfiguration
-- set_fact: CLUES_PATH=/usr/local/bin/clues
+- set_fact:
+    CLUES_PATH: /usr/local/bin/clues
+    CLUES_SERVER_BINARY: /usr/local/bin/cluesserver
   when: ansible_os_family == "Debian" or (ansible_os_family == "RedHat" and ansible_distribution_major_version|int > 7)
 
-- set_fact: CLUES_PATH=/usr/bin/clues
+- set_fact:
+    CLUES_PATH: /usr/bin/clues
+    CLUES_SERVER_BINARY: /usr/bin/cluesserver
   when: ansible_os_family == "RedHat" and ansible_distribution_major_version|int <= 7
 
 - stat: path={{CLUES_PATH}}
   register: clues_installed
-
-- name: Link python 3 or 2 in case is needed
-  shell: ls /usr/bin/python || { ls /usr/bin/python3 && ln -s /usr/bin/python3 /usr/bin/python; } || { ls /usr/bin/python2 && ln -s /usr/bin/python2 /usr/bin/python; }
-  changed_when: false
 
 - name: Create clues2 conf dir
   file: path=/etc/clues2 state=directory mode=755
@@ -19,10 +19,10 @@
 - name: Create clues2 conf.d dir
   file: path=/etc/clues2/conf.d state=directory mode=755
 
-- name: Include "{{ansible_os_family}}" CLUES2 requirements
-  include_tasks: "{{ansible_os_family}}.yml"
-
 - block:
+
+  - name: Include "{{ansible_os_family}}" CLUES2 requirements
+    include_tasks: "{{ansible_os_family}}.yml"
 
   - set_fact: pip_exec=pip2
     when: ansible_python_version is version('3', '<')
@@ -78,10 +78,6 @@
     pip:
       name: git+https://github.com/grycap/clues.git@{{ clues_git_branch }}
       executable: "{{pip_exec}}"
-
-  - name: Stop clues server
-    command: systemctl stop cluesd
-    ignore_errors: yes
 
   # CLUES2 Config file
   - name: Set CLUES2 folder rights

@@ -3,6 +3,10 @@
   hosts: all
   tasks:
  
+    - name: Link python 3 or 2 in case is needed
+      shell: ls /usr/bin/python || { ls /usr/bin/python3 && ln -s /usr/bin/python3 /usr/bin/python; } || { ls /usr/bin/python2 && ln -s /usr/bin/python2 /usr/bin/python; }
+      changed_when: false
+
     - name: "Include grycap.clues"
       include_role:
         name: "ansible-role-clues"
