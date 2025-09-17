@@ -5,7 +5,6 @@
       - /usr/local/bin
     patterns: "sbatch"
     file_type: file
-    limit: 1
   register: sbatch_file
 
 - name: Set SBATCH_BINARY fact
@@ -19,7 +18,6 @@
       - /usr/local/bin
     patterns: "scontrol"
     file_type: file
-    limit: 1
   register: scontrol_file
 
 - name: Set SCONTROL_BIN fact
@@ -37,7 +35,6 @@
       - /usr/local/bin
     patterns: "clues-slurm-wrapper"
     file_type: file
-    limit: 1
   register: wrapper_file
 
 - name: Set CLUES_SLURM_WRAPPER fact
