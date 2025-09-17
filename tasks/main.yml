@@ -72,7 +72,7 @@
     pip:
       name: git+https://github.com/grycap/clues.git@{{ clues_git_branch }}
       executable: "{{pip_exec}}"
-      extra_args: --no-binary clues
+      extra_args: "{{ extra_args }} --no-binary clues"
 
   - name: Install CLUES2
     pip:
