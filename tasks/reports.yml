@@ -1,0 +1,19 @@
+- name: Set CLUES2 reports folder rights
+  file: path=/etc/clues2/reports state=directory mode=755
+
+- name: Download reports files
+  get_url:
+    url: https://raw.githubusercontent.com/grycap/clues/refs/heads/master/etc/reports/{{ item }}
+    dest: /etc/clues2/reports/{{ item }}
+    force: no
+    mode: '0644'
+  loop:
+    - cluescharts.js
+    - cluesdata.js
+    - cluesstats.js
+    - minibarchart.js
+    - cluesprocess.js
+    - piechart.js
+    - randomColor.js
+    - index.html
+

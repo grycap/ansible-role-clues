@@ -92,6 +92,9 @@
       mode: '0644'
     notify: restart cluesd
 
+  - name: Install reports files
+    include_tasks: "reports.yml"
+
   when: not clues_installed.stat.exists
 
 
