@@ -179,7 +179,7 @@
     dest: /usr/lib/systemd/system/cluesd.service
 
 - name: Start CLUES service
-  systemd_service:
+  systemd:
     daemon_reload: yes
     name: cluesd
     state: started
